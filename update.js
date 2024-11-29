@@ -36,6 +36,8 @@ let currentDay = 1;
 let exercises = [];
 let currentExerciseIndex = 0;
 let timer = null;
+let isPaused = false;
+let remainingTime = 0;
 
 // Function to parse exercises for the day
 function parseExercises(dayPlan) {
@@ -47,7 +49,6 @@ function parseExercises(dayPlan) {
 // Function to show the current exercise
 function showNextExercise() {
     const contentDiv = document.getElementById("day-content");
-    const timerDisplay = document.getElementById("timer-display");
 
     if (currentExerciseIndex < exercises.length) {
         const exercise = exercises[currentExerciseIndex];
@@ -58,7 +59,7 @@ function showNextExercise() {
         if (timeMatch) {
             startTimer(timeMatch[1]);
         } else {
-            triggerBreak(); // If there's no timer, start the 10-second break
+            stopTimer(); // No timer needed for this exercise
         }
     } else {
         contentDiv.innerHTML = `<h2>You've completed all exercises for Day ${currentDay}!</h2>`;
@@ -86,16 +87,21 @@ function changeDay(dayNumber) {
 
 // Timer functionality
 function startTimer(duration) {
-    const [minutes, seconds] = duration.split(':').map(Number);
-    let totalTime = minutes * 60 + seconds;
-    updateTimerDisplay(totalTime);
+    const totalSeconds = durationToSeconds(duration);
+    remainingTime = remainingTime || totalSeconds;
+    isPaused = false;
+
+    updateTimerDisplay(remainingTime);
     clearInterval(timer);
     timer = setInterval(() => {
-        totalTime--;
-        updateTimerDisplay(totalTime);
-        if (totalTime <= 0) {
-            clearInterval(timer);
-            triggerBreak(); // Start the break after the timer ends
+        if (!isPaused) {
+            remainingTime--;
+            updateTimerDisplay(remainingTime);
+            if (remainingTime <= 0) {
+                clearInterval(timer);
+                currentExerciseIndex++;
+                showNextExercise();
+            }
         }
     }, 1000);
 }
@@ -108,36 +114,32 @@ function updateTimerDisplay(time) {
 
 function stopTimer() {
     clearInterval(timer);
-    document.getElementById("timer-display").innerText = `Remaining Time: 0:00`;
+    timer = null;
+    remainingTime = 0;
+    document.getElementById("timer-display").innerText = "Remaining Time: 0:00";
 }
 
-// Break functionality: 10 seconds break
-function triggerBreak() {
-    const contentDiv = document.getElementById("day-content");
-    const timerDisplay = document.getElementById("timer-display");
+function durationToSeconds(duration) {
+    const [minutes, seconds] = duration.split(':').map(Number);
+    return minutes * 60 + seconds;
+}
 
-    contentDiv.innerHTML = `<h2>Break: 10 seconds</h2>`;
-    let breakTime = 10;
-    timerDisplay.innerText = `Break Time: ${breakTime}s`;
-
+// Pause and Start controls
+function pauseExercise() {
+    isPaused = true;
     clearInterval(timer);
-    timer = setInterval(() => {
-        breakTime--;
-        timerDisplay.innerText = `Break Time: ${breakTime}s`;
-
-        if (breakTime <= 0) {
-            clearInterval(timer);
-            currentExerciseIndex++;
-            showNextExercise();
-        }
-    }, 1000);
 }
 
-// Function to manually skip to the next exercise
+function startCurrentExercise() {
+    if (remainingTime > 0 || isPaused) {
+        startTimer(""); // Resume timer
+    } else {
+        showNextExercise(); // Start new exercise
+    }
+}
+
 function nextExercise() {
-    stopTimer();
-    triggerBreak(); // Add a break before showing the next exercise
+    stopTimer(); // Skip the current timer
+    currentExerciseIndex++;
+    showNextExercise();
 }
-
-// Initialize with the first day
-showDay(currentDay);
