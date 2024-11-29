@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -19,7 +20,6 @@
 
     <div id="day-selector">
         <!-- Buttons to change days -->
-        <!-- Button code here... -->
         <button onclick="changeDay(1)">Day 1</button>
         <button onclick="changeDay(2)">Day 2</button>
         <button onclick="changeDay(3)">Day 3</button>
@@ -57,12 +57,11 @@
     </div>
     
     <!-- Timer display and controls -->
-    <div id="timer-controls">
+    <div id="timer-display-container">
         <h2 id="timer-display">Remaining Time: 0:00</h2>
-        <button id="start-timer" onclick="startTimer()">Start</button>
-        <button id="pause-timer" onclick="pauseTimer()" disabled>Pause</button>
-        <button id="stop-timer" onclick="stopTimer()" disabled>Stop</button>
     </div>
+
+    <button id="next-exercise" onclick="nextExercise()">Next Exercise</button>
 
     <footer>
         <p>Created by You</p>
