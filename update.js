@@ -48,14 +48,26 @@ function parseExercises(dayPlan) {
 // Function to show the current exercise
 function showNextExercise() {
     const contentDiv = document.getElementById("day-content");
+    const timerDisplay = document.getElementById("timer-display");
+
     if (currentExerciseIndex < exercises.length) {
         const exercise = exercises[currentExerciseIndex];
         contentDiv.innerHTML = `<h2>${exercise}</h2>`;
         
-        // Start timer if the exercise includes a time
+        // Check if the exercise has a timer
         const timeMatch = exercise.match(/(\d{2}:\d{2})/);
         if (timeMatch) {
             startTimer(timeMatch[1]);
+        } else {
+            // If there's no timer, show a 10-second break before the next exercise
+            currentExerciseIndex++;
+            setTimeout(() => {
+                timerDisplay.innerText = `Break: 10 seconds`;
+                setTimeout(() => {
+                    currentExerciseIndex++;
+                    showNextExercise();
+                }, 10000); // 10-second break
+            }, 1000); // Show break message for 1 second before next exercise
         }
     } else {
         contentDiv.innerHTML = `<h2>You've completed all exercises for Day ${currentDay}!</h2>`;
@@ -108,11 +120,5 @@ function stopTimer() {
     document.getElementById("timer-display").innerText = `Remaining Time: 0:00`;
 }
 
-// Function to go to the next exercise
-function nextExercise() {
-    currentExerciseIndex++;
-    showNextExercise();
-}
-
-// Show the plan for day 1 when the page loads
-window.onload = () => showDay(1);
+// Initialize with the first day
+showDay(currentDay);
