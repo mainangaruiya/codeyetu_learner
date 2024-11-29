@@ -32,13 +32,12 @@ const fitnessPlan = [
     "Day 30: x15 Push-ups, x15 Squats, x20 jumping jacks, x10 crunches, 00:40 mount climber, 00:40 plank, 00:30 cobra stretch"
 ];
 
-// Initialize state variables
 let currentDay = 1;
 let exercises = [];
 let currentExerciseIndex = 0;
 let timer = null;
 
-// Function to parse exercises for the day and initialize the timer
+// Function to parse exercises for the day
 function parseExercises(dayPlan) {
     exercises = dayPlan.split(',').map(ex => ex.trim());
     currentExerciseIndex = 0;
@@ -59,15 +58,7 @@ function showNextExercise() {
         if (timeMatch) {
             startTimer(timeMatch[1]);
         } else {
-            // If there's no timer, show a 10-second break before the next exercise
-            currentExerciseIndex++;
-            setTimeout(() => {
-                timerDisplay.innerText = `Break: 10 seconds`;
-                setTimeout(() => {
-                    currentExerciseIndex++;
-                    showNextExercise();
-                }, 10000); // 10-second break
-            }, 1000); // Show break message for 1 second before next exercise
+            triggerBreak(); // If there's no timer, start the 10-second break
         }
     } else {
         contentDiv.innerHTML = `<h2>You've completed all exercises for Day ${currentDay}!</h2>`;
@@ -89,6 +80,7 @@ function showDay(dayNumber) {
 
 // Function to change day dynamically based on button clicks
 function changeDay(dayNumber) {
+    stopTimer();
     showDay(dayNumber);
 }
 
@@ -103,8 +95,7 @@ function startTimer(duration) {
         updateTimerDisplay(totalTime);
         if (totalTime <= 0) {
             clearInterval(timer);
-            currentExerciseIndex++;
-            showNextExercise();
+            triggerBreak(); // Start the break after the timer ends
         }
     }, 1000);
 }
@@ -118,6 +109,34 @@ function updateTimerDisplay(time) {
 function stopTimer() {
     clearInterval(timer);
     document.getElementById("timer-display").innerText = `Remaining Time: 0:00`;
+}
+
+// Break functionality: 10 seconds break
+function triggerBreak() {
+    const contentDiv = document.getElementById("day-content");
+    const timerDisplay = document.getElementById("timer-display");
+
+    contentDiv.innerHTML = `<h2>Break: 10 seconds</h2>`;
+    let breakTime = 10;
+    timerDisplay.innerText = `Break Time: ${breakTime}s`;
+
+    clearInterval(timer);
+    timer = setInterval(() => {
+        breakTime--;
+        timerDisplay.innerText = `Break Time: ${breakTime}s`;
+
+        if (breakTime <= 0) {
+            clearInterval(timer);
+            currentExerciseIndex++;
+            showNextExercise();
+        }
+    }, 1000);
+}
+
+// Function to manually skip to the next exercise
+function nextExercise() {
+    stopTimer();
+    triggerBreak(); // Add a break before showing the next exercise
 }
 
 // Initialize with the first day
